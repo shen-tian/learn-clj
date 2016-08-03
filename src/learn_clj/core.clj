@@ -1,5 +1,4 @@
 (ns learn-clj.core
-  (:import (processing.core PVector))
   (:import (me.lsdo.processing
     OPC
     Dome
