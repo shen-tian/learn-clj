@@ -1,9 +1,9 @@
 (ns learn-clj.core
   (:import (me.lsdo.processing
-    OPC
-    Dome
-    DomeAnimation
-    LayoutUtil))
+             OPC
+             Dome
+             DomeAnimation
+             LayoutUtil))
   (:gen-class))
 
 (def dome
@@ -30,8 +30,8 @@
 
 (defn arm [panelx]
   (if (< panelx 4) 0
-  (if (< panelx 8) 1
-  (if (< panelx 12) 2 3))))
+                   (if (< panelx 8) 1
+                                    (if (< panelx 12) 2 3))))
 
 
 (defn unit-interval-to-byte
@@ -39,24 +39,28 @@
   (mod (int (* x 255)) 256))
 
 (defn get-brightness
+  "Brightness ramps up, function of time and location within the panel"
   [coord t]
   (unit-interval-to-byte
     (/
       (- (get coord-order coord)
-        (* creep-speed t))
-        ramp-length)))
+         (* creep-speed t))
+      ramp-length)))
 
 (defn get-saturaiton
-  [coord t]
+  "Calculates the saturation."
+  [coord]
   (unit-interval-to-byte
-    (+ 0.5 (* 0.5 (/
-      (mod (panel (get coord-order coord)) 4)
-      (double (max (-
-        (get arms (arm (panel (get coord-order coord))))
-          1) 1)))))))
+    (let [i (get coord-order coord)
+          p (panel i)
+          a (arm p)]
+      (+ 0.5
+         (* 0.5
+            (/ (mod p 4)
+               (double (max (- (arms a) 1) 1))))))))
 
 (defn get-hue
-  [coord t]
+  [coord]
   (unit-interval-to-byte
     (/
       (arm (panel (get coord-order coord)))
@@ -66,9 +70,9 @@
   (proxy [DomeAnimation] [dome opc]
     (drawPixel [coord t]
       (proxy-super getHsbColor
-        (get-hue coord t)
-        (get-saturaiton coord t)
-        (get-brightness coord t)))))
+                   (get-hue coord)
+                   (get-saturaiton coord)
+                   (get-brightness coord t)))))
 
 (defn millis []
   (System/currentTimeMillis))
@@ -76,7 +80,7 @@
 (defn -main
   "I don't do a whole lot ... yet."
   [& args]
-  (def start (millis))
-  (while true
-    (.draw test-animation
-      (/ (- (millis) start) 1000))))
+  (let [start (millis)]
+    (while true
+      (.draw test-animation
+             (/ (- (millis) start) 1000)))))
